@@ -27,11 +27,11 @@ $anchors = $xpath->query("//*[@id='post-list-all-all']//a");
 
 foreach ($anchors as $anchor) {
   // Title (text of h2 element)
-  $h2Nodes = $anchor->getElementsByTagName("h2");
+  $h2Nodes = $xpath->query(".//h2", $anchor);
   $title = ($h2Nodes->length > 0) ? trim($h2Nodes->item(0)->textContent) : "";
 
   // Date (text of time element) → Convert to ISO format
-  $timeNodes = $anchor->getElementsByTagName("time");
+  $timeNodes = $xpath->query(".//time", $anchor);
   $dateString = ($timeNodes->length > 0) ? trim($timeNodes->item(0)->textContent) : "";
   $date = "";
   if (!empty($dateString)) {
@@ -44,11 +44,11 @@ foreach ($anchors as $anchor) {
   }
 
   // Category (text of span element)
-  $spanNodes = $anchor->getElementsByTagName("span");
+  $spanNodes = $xpath->query(".//span", $anchor);
   $category = ($spanNodes->length > 0) ? trim($spanNodes->item(0)->textContent) : "";
 
   // Link (href attribute of a element)
-  $href = $anchor->getAttribute("href");
+  $href = $anchor->attributes->getNamedItem('href')->nodeValue;
   // Handle cases where href doesn't start with '/'
   $fullUrl = "https://nnn.ed.jp/" . ltrim($href, "/");
 

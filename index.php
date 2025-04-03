@@ -22,16 +22,16 @@ $siteTitle = ($titleNodes->length > 0) ? trim($titleNodes->item(0)->textContent)
 // Array to store RSS items
 $items = [];
 
-// Get elements corresponding to "#post-list-all-all a" using XPath
-$anchors = $xpath->query("//*[@id='post-list-all-all']//a");
+// Get elements corresponding to the news article links using XPath
+$anchors = $xpath->query("//ul[contains(@class, 'ArticleArea_newsList')]//li//article//a");
 
 foreach ($anchors as $anchor) {
-  // Title (text of h2 element)
-  $h2Nodes = $xpath->query(".//h2", $anchor);
-  $title = ($h2Nodes->length > 0) ? trim($h2Nodes->item(0)->textContent) : "";
+  // Title (text of h3 element in the second div)
+  $h3Nodes = $xpath->query(".//div[2]//h3", $anchor);
+  $title = ($h3Nodes->length > 0) ? trim($h3Nodes->item(0)->textContent) : "";
 
-  // Date (text of time element) → Convert to ISO format
-  $timeNodes = $xpath->query(".//time", $anchor);
+  // Date (text of first time element) → Convert to ISO format
+  $timeNodes = $xpath->query(".//time[1]", $anchor);
   $dateString = ($timeNodes->length > 0) ? trim($timeNodes->item(0)->textContent) : "";
   $date = "";
   if (!empty($dateString)) {
@@ -43,8 +43,8 @@ foreach ($anchors as $anchor) {
     }
   }
 
-  // Category (text of span element)
-  $spanNodes = $xpath->query(".//span", $anchor);
+  // Category (text of span with Label class in first div)
+  $spanNodes = $xpath->query(".//div[1]//span[contains(@class, 'Label_label')]", $anchor);
   $category = ($spanNodes->length > 0) ? trim($spanNodes->item(0)->textContent) : "";
 
   // Link (href attribute of a element)

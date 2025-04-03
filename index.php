@@ -1,4 +1,36 @@
 <?php
+// Cache configuration
+define('CACHE_DIR', __DIR__ . '/cache');
+define('CACHE_EXPIRATION', 1800); // 30 minutes in seconds
+define('CACHE_MAX_AGE', 86400); // 24 hours in seconds
+define('CACHE_FILE', CACHE_DIR . '/rss_cache.xml');
+
+// Create cache directory if it doesn't exist
+if (!file_exists(CACHE_DIR)) {
+  mkdir(CACHE_DIR, 0755, true);
+}
+
+// Clean up old cache files
+$now = time();
+foreach (glob(CACHE_DIR . '/*') as $file) {
+  if (is_file($file) && ($now - filemtime($file) > CACHE_MAX_AGE)) {
+    unlink($file);
+  }
+}
+
+// Check if cache exists and is still valid
+$useCache = false;
+if (file_exists(CACHE_FILE)) {
+  $fileAge = $now - filemtime(CACHE_FILE);
+  if ($fileAge < CACHE_EXPIRATION) {
+    $useCache = true;
+    header("Content-Type: text/xml; charset=UTF-8");
+    header("X-Cache: HIT");
+    readfile(CACHE_FILE);
+    exit;
+  }
+}
+
 // Target URL
 $url = "https://nnn.ed.jp/news/";
 
@@ -88,6 +120,13 @@ foreach ($items as $item) {
   $channel->appendChild($itemElem);
 }
 
-// Set header and output XML
+// Set headers and save cache
 header("Content-Type: text/xml; charset=UTF-8");
-echo $rssDoc->saveXML();
+header("X-Cache: MISS");
+
+// Save to cache file
+$xml = $rssDoc->saveXML();
+file_put_contents(CACHE_FILE, $xml);
+
+// Output XML
+echo $xml;
